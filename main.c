@@ -36,8 +36,11 @@ void editarRegistro(Node *listaRegistros);
 void removerRegistro(Node **listaRegistros);
 void editarSenha(Usuario *usuario);
 int validarSenha(Usuario usuario);
+void buscarRegistro(Node *listaRegistros);
 
 int main() {
+    
+    
     // Inicialização do usuário
     Usuario usuario;
     strcpy(usuario.senha, "senha123"); // Senha padrão
@@ -75,8 +78,9 @@ void menuPrincipal(Usuario *usuario, Node **listaRegistros) {
         printf("2. Listar registros\n");
         printf("3. Editar registro\n");
         printf("4. Remover registro\n");
-        printf("5. Editar senha\n");
-        printf("6. Sair\n");
+        printf("5. Buscar registro\n");  
+        printf("6. Editar senha\n");
+        printf("7. Sair\n");
         printf("Escolha uma opcao: ");
         scanf("%d", &opcao);
 
@@ -94,15 +98,18 @@ void menuPrincipal(Usuario *usuario, Node **listaRegistros) {
                 removerRegistro(listaRegistros);
                 break;
             case 5:
-                editarSenha(usuario);
+                buscarRegistro(*listaRegistros);
                 break;
             case 6:
+                editarSenha(usuario);
+                break;
+            case 7:
                 printf("Saindo do programa. Ate logo!\n");
                 break;
             default:
                 printf("Opcao invalida. Tente novamente.\n");
         }
-    } while (opcao != 6);
+    } while (opcao != 7);
 }
 
 void adicionarRegistro(Node **listaRegistros) {
@@ -238,10 +245,51 @@ void removerRegistro(Node **listaRegistros) {
     free(current);
 }
 
+void buscarRegistro(Node *listaRegistros) {
+    char nomeBusca[MAX_NAME_LENGTH];
+    printf("\n=== Buscar Registro ===\n");
+    printf("Digite o nome a ser buscado: ");
+    scanf("%s", nomeBusca);
+
+    Node *current = listaRegistros;
+    int encontrados = 0;
+
+    while (current != NULL) {
+        if (strcmp(current->data.nome, nomeBusca) == 0) {
+            printf("Registro encontrado:\n");
+            printf("Data: %s\n", current->data.data);
+            printf("Horario: %s\n", current->data.horario);
+            printf("Nome: %s\n", current->data.nome);
+            printf("Local: %s\n", current->data.local);
+            printf("Duracao: %d minutos\n", current->data.duracao);
+            printf("Observacao: %s\n", current->data.observacao);
+            printf("\n");
+            encontrados++;
+        }
+        current = current->next;
+    }
+
+    if (encontrados == 0) {
+        printf("Nenhum registro encontrado para o nome '%s'.\n", nomeBusca);
+    }
+}
+
 void editarSenha(Usuario *usuario) {
     char novaSenha[MAX_PASSWORD_LENGTH];
+    char senhaAtual[MAX_PASSWORD_LENGTH];
 
+    // Solicita a senha atual para verificar a autenticidade do usuário
     printf("\n=== Editar Senha ===\n");
+    printf("Digite a senha atual: ");
+    scanf("%s", senhaAtual);
+
+    // Verifica se a senha atual está correta
+    if (strcmp(senhaAtual, usuario->senha) != 0) {
+        printf("Senha atual incorreta. A senha não foi alterada.\n");
+        return;
+    }
+
+    // Solicita a nova senha
     printf("Digite a nova senha: ");
     scanf("%s", novaSenha);
 
@@ -249,6 +297,13 @@ void editarSenha(Usuario *usuario) {
     strcpy(usuario->senha, novaSenha);
 
     printf("Senha alterada com sucesso.\n");
+
+    // Solicita a senha novamente para continuar
+    if (!validarSenha(*usuario)) {
+        printf("Senha incorreta. Encerrando o programa.\n");
+        exit(1); // Encerra o programa
+    }
+
 }
 
 int validarSenha(Usuario usuario) {
